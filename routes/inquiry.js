@@ -29,12 +29,31 @@ const validateData = async (req, res, next) => {
 const createInquiry = async (req, res) => {
     const { name, email, message,  subscription } = req.body
     const fileName = new Date().getTime() + '.txt'
-    const text = `Name: ${name}\nEmail: ${email}\nSubscription: ${subscription}\nMessage: ${message}\n`
+    const text = `{ "Name": "${name}", "Email": "${email}", "Subscription": "${subscription}", "Message": "${message}" }`
     fs.writeFile(`inquires/${fileName}`, text, err => {
         if(err) res.status(statusCodes['INTERNAL SERVER ERROR']).json({"Error": "Internal server error please try again in sometime."})
         res.status(statusCodes['CREATED']).json({ "Message": "Inquiry successfully submitted." })
     });
 }
 
+/**
+ * @author Rishi
+ * @description: retrieves all the users inquiry details by reading tall the files.
+ * @param req
+ * @param res
+ * @returns {Promise<void>}
+ */
+const getAllInquiries = async (req, res) => {
+    try {
+        const files = fs.readdirSync('inquires')
+        const data = files.map(file => JSON.parse(fs.readFileSync(`inquires/${file}`, "utf-8")))
+        if(data.length === 0) res.status(statusCodes['OK']).json({"Data": "There are no inquires yet."})
+        else res.status(statusCodes['OK']).json({"Data": data})
+    } catch (e) {
+        res.status(statusCodes['INTERNAL SERVER ERROR']).json({"Error": "Internal server error please try again in sometime."})
+    }
+}
+
 router.post('/', validateData, createInquiry)
+router.get('/', getAllInquiries)
 module.exports = router;
