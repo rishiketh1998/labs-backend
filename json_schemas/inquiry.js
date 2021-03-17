@@ -9,7 +9,8 @@ const inquiryFormSchema = Joi.object().keys({
     name: Joi.string().required(),
     email: Joi.string().email({minDomainSegments: 2, tlds: {allow: ['com', 'net', 'uk']}}).max(256).required(),
     message: Joi.string().required(),
-    subscription: Joi.boolean().required()
+    subscription: Joi.boolean().required(),
+    captcha: Joi.string()
 })
 
 module.exports = {

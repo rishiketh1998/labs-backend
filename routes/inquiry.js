@@ -3,6 +3,7 @@ const { inquiryFormSchema } = require('../json_schemas/inquiry.js')
 const statusCodes = require('../helpers/statusCode.js')
 const fs = require("fs")
 const router = express.Router()
+const request = require('request')
 
 /**
  * @author Rishi
@@ -11,6 +12,19 @@ const router = express.Router()
  * @returns {string}
  */
 const capitalize = (message) => message[1].toUpperCase() + message.slice(2);
+
+const validateRecaptcha = async (req, res, next) => {
+    if(req.body.captcha == null || req.body.captcha === '') {
+        res.status(statusCodes['FORBIDDEN']).json({"Error": `Please select captcha`})
+    }
+    const verifyUrl = `https://google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET}
+    &response=${req.body.captcha}&remoteip=${req.connection.remoteAddress}`
+    request(verifyUrl, (err, response, body) => {
+        body = JSON.parse(body)
+        if(body.success) next()
+        else res.status(statusCodes['FORBIDDEN']).json({"Error": `Please select captcha`})
+    })
+}
 
 /**
  * @author Rishi
@@ -45,5 +59,5 @@ const createInquiry = async (req, res) => {
     });
 }
 
-router.post('/', validateData, createInquiry)
+router.post('/', validateRecaptcha,validateData, createInquiry)
 module.exports = router;
