@@ -5,7 +5,7 @@ const router = express.Router()
 
 /**
  * @author Rishi
- * @description: reverse's an array
+ * @description: reverses an array
  * @param arr
  * @returns {[]}
  */

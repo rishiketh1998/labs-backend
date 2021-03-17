@@ -13,6 +13,14 @@ const request = require('request')
  */
 const capitalize = (message) => message[1].toUpperCase() + message.slice(2);
 
+/**
+ * @author Rishi
+ * @description: validates whether the user has successfully selected the recaptcha by making an ajax call to google api.
+ * @param req
+ * @param res
+ * @param next
+ * @returns {Promise<void>}
+ */
 const validateRecaptcha = async (req, res, next) => {
     if(req.body.captcha == null || req.body.captcha === '') {
         res.status(statusCodes['FORBIDDEN']).json({"Error": `Please select captcha`})
