@@ -6,6 +6,14 @@ const router = express.Router()
 
 /**
  * @author Rishi
+ * @description: upper cases the first letter of the error message
+ * @param message
+ * @returns {string}
+ */
+const capitalize = (message) => message[1].toUpperCase() + message.slice(2);
+
+/**
+ * @author Rishi
  * @description: validates the data entered by the user to verify all the information is valid
  * @param req
  * @param res
@@ -14,7 +22,7 @@ const router = express.Router()
  */
 const validateData = async (req, res, next) => {
     const { error } = await inquiryFormSchema.validate(req.body)
-    if(error) res.status(statusCodes['FORBIDDEN']).json({"Error": error.message})
+    if(error) res.status(statusCodes['FORBIDDEN']).json({"Error": `"${capitalize(error.message)}`})
     else next()
 }
 
@@ -29,31 +37,13 @@ const validateData = async (req, res, next) => {
 const createInquiry = async (req, res) => {
     const { name, email, message,  subscription } = req.body
     const fileName = new Date().getTime() + '.txt'
-    const text = `{ "Name": "${name}", "Email": "${email}", "Subscription": "${subscription}", "Message": "${message}" }`
-    fs.writeFile(`inquires/${fileName}`, text, err => {
+    const date = (new Date()).toString()
+    const text = `{ "Name": "${name}", "Email": "${email}", "Subscription": "${subscription}", "Message": "${message}", "Date": "${date}" }`
+    fs.writeFile(`inquiries/${fileName}`, text, err => {
         if(err) res.status(statusCodes['INTERNAL SERVER ERROR']).json({"Error": "Internal server error please try again in sometime."})
         res.status(statusCodes['CREATED']).json({ "Message": "Inquiry successfully submitted." })
     });
 }
 
-/**
- * @author Rishi
- * @description: retrieves all the users inquiry details by reading tall the files.
- * @param req
- * @param res
- * @returns {Promise<void>}
- */
-const getAllInquiries = async (req, res) => {
-    try {
-        const files = fs.readdirSync('inquires')
-        const data = files.map(file => JSON.parse(fs.readFileSync(`inquires/${file}`, "utf-8")))
-        if(data.length === 0) res.status(statusCodes['OK']).json({"Data": "There are no inquires yet."})
-        else res.status(statusCodes['OK']).json({"Data": data})
-    } catch (e) {
-        res.status(statusCodes['INTERNAL SERVER ERROR']).json({"Error": "Internal server error please try again in sometime."})
-    }
-}
-
 router.post('/', validateData, createInquiry)
-router.get('/', getAllInquiries)
 module.exports = router;
